@@ -66,9 +66,8 @@ async function putFrame(buffer, name) {
 exports.stream_handler = awslambda.streamifyResponse(async (event, responseStream, context) => {
     console.log(event.queryStringParameters);
 
-    responseStream.on('close', () => {
-        console.log('Client disconnected.');
-    });
+    var interval = event.queryStringParameters["interval"] ? parseInt(event.queryStringParameters["interval"]) : UPDATE_INTERVAL;
+    var name = event.queryStringParameters["name"];
 
     const BOUNDARY = crypto.randomUUID();
     responseStream = awslambda.HttpResponseStream.from(responseStream, {
@@ -78,7 +77,6 @@ exports.stream_handler = awslambda.streamifyResponse(async (event, responseStrea
         }
     });
 
-    var name = event.queryStringParameters["name"];
     if (!stream_list[name]) {
         const udp_send = () => {
             socket.send(JSON.stringify({
@@ -88,7 +86,7 @@ exports.stream_handler = awslambda.streamifyResponse(async (event, responseStrea
         };
         stream_list[name] = {
             client_list: [],
-            interval: setInterval(udp_send, UPDATE_INTERVAL)
+            interval: setInterval(udp_send, interval)
         };
         udp_send();
     }
@@ -113,7 +111,7 @@ exports.stream_handler = awslambda.streamifyResponse(async (event, responseStrea
         }
     });
 
-//    responseStream.end();
+    //    responseStream.end();
 });
 
 exports.udp_handler = async (event, context) => {
@@ -132,7 +130,7 @@ exports.udp_handler = async (event, context) => {
         value
     } = reader.push(event.body);
     if (value) {
-//		console.log(value);
+        //		console.log(value);
         putFrame(Buffer.from(value, 'base64'), name);
     } else if (done) {}
 };
