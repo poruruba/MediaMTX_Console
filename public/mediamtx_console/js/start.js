@@ -4,8 +4,11 @@
 //const remoteConsole = new RemoteConsole("http://[remote server]/logio-post");
 //window.datgui = new dat.GUI();
 
+const base_url = 'https://【HTTPSでのホスト名】:29997';
 //const base_url = 'http://【MediaMTXサーバのホスト名】:9997';
-const base_url = 'https://【MediaMTXサーバのホスト名】:29997';
+
+const webrtc_base_url = "https://【HTTPSでのホスト名】:28889";
+//const webrtc_base_url = "http://【MediaMTXサーバのホスト名】:8889";
 
 var vue_options = {
     el: "#top",
@@ -26,6 +29,7 @@ var vue_options = {
         pc_send: null,
         pc_receive: null,
         params_camera_record: {},
+        remotePath: "",
     },
     computed: {
     },
@@ -35,10 +39,14 @@ var vue_options = {
             return date.toLocaleString();
         },
 
+        send_callback: async function(module, event){
+            console.log(module, event);
+        },
         recording_start: async function(){
             this.dialog_close('#dialog_record_start');
             var stream;
             try{
+                this.progress_open();
                 try {
                     stream = await navigator.mediaDevices.getUserMedia({
                         video: true,
@@ -57,7 +65,7 @@ var vue_options = {
                     name: this.params_camera_record.name,
                     timeout: 5000
                 };
-                this.pc_send = await webrtc_send_connect(input);
+                this.pc_send = await webrtc_send_connect(input, this.send_callback);
 
                 localStorage.setItem("mediamtx_config", JSON.stringify(this.params_camera_record));
             }catch(error){
@@ -69,6 +77,8 @@ var vue_options = {
                     });
                 }
                 alert(error);
+            }finally{
+                this.progress_close();
             }
         },
         do_publish: async function(){
@@ -102,6 +112,13 @@ var vue_options = {
             }
             this.dialog_open("#dialog_config");
         },
+        receive_callback: async function(module, event){
+            console.log(module, event);
+            if( module == 'peer' && event.type == 'track' ){
+                const video = document.getElementById("remoteVideo");
+                video.srcObject = event.streams[0];
+            }
+        },
         webrtc_start: async function(name){
             var conf = localStorage.getItem("mediamtx_config");
             if( !conf ){
@@ -117,15 +134,16 @@ var vue_options = {
                     password: conf.password,
                     timeout: 5000
                 };
-                this.pc_receive = await webrtc_receive_connect(input);
+                this.pc_receive = await webrtc_receive_connect(input, this.receive_callback);
+
+                this.remotePath = name;
+                this.dialog_open("#dialog_webrtc");
             }catch(error){
                 console.error(error);
                 alert(error);
-                return;
             }finally{
                 this.progress_close();
             }
-            this.dialog_open("#dialog_webrtc");
         },
         webrtc_stop: async function(){
             webrtc_disconnect(this.pc_receive);
@@ -244,15 +262,12 @@ vue_add_global_components(components_utils);
 window.vue = new Vue( vue_options );
 
 
-const mediamtx_base_url = "https://home.poruru.work:28889";
-
 function webrtc_disconnect(pc){
     const senders = pc.getSenders();
     senders.forEach(sender => {
         const track = sender.track;
         if (track) {
             track.stop();
-            console.log(`トラック '${track.kind}' を停止しました。`);
         }
         pc.removeTrack(sender);
     });
@@ -260,7 +275,7 @@ function webrtc_disconnect(pc){
 }
 
 // input: user, password, timeout, name
-async function webrtc_receive_connect(input)
+async function webrtc_receive_connect(input, callback)
 {
     var { user, password, timeout, name } = input;
 
@@ -270,31 +285,29 @@ async function webrtc_receive_connect(input)
     });
 
     pc.addEventListener('track', event => {
-        console.log("track", event);
-        const video = document.getElementById("remoteVideo");
-        video.srcObject = event.streams[0]; // 映像＋音声がまとめて入る
+        if (callback) callback('peer', { type: 'track', kind: event.track.kind, streams: event.streams, track: event.track });
     });
 
     pc.addEventListener('icecandidate', (event) => {
-        console.log("icecandidate", event);
+        if (callback) callback('peer', { type: 'icecandidate', candidate: event });
     });
     pc.addEventListener('connectionstatechange', (event) => {
-        console.log("connectionstatechange", event);
+        if (callback) callback('peer', { type: 'connectionstatechange', connectionState: event.target.connectionState });
     });
     pc.addEventListener('negotiationneeded', (event) => {
-        console.log('negotiationneeded', event);
+        if (callback) callback('peer', { type: 'negotiationneeded' });
     });
     pc.addEventListener('icegatheringstatechange', (event) => {
-        console.log('icegatheringstatechange', event);
+        if (callback) callback('peer', { type: 'icegatheringstatechange', iceGatheringState: event.target.iceGatheringState });
     });
     pc.addEventListener('iceconnectionstatechange', (event) => {
-        console.log('iceconnectionstatechange', event);
+        if (callback) callback('peer', { type: 'iceconnectionstatechange', iceConnectionState: event.target.iceConnectionState });
     });
     pc.addEventListener('icecandidateerror', (event) => {
-        console.log('icecandidateerror', event);
+        if (callback) callback('peer', { type: 'icecandidateerror', errorCode: event.errorCode, errorText: event.errorText });
     });
     pc.addEventListener('signalingstatechange', (event) => {
-        console.log('signalingstatechange', event);
+        if (callback) callback('peer', { type: 'signalingstatechange', signalingState: event.target.signalingState });
     });
 
     pc.addTransceiver( 'video', { direction: "recvonly" });
@@ -314,7 +327,7 @@ async function webrtc_receive_connect(input)
     });
 
     var input = {
-        url: `${mediamtx_base_url}/${name}/whep`,
+        url: `${webrtc_base_url}/${name}/whep`,
         headers: {
             "Authorization": "Basic " + btoa(user + ":" + password)
         },
@@ -329,7 +342,7 @@ async function webrtc_receive_connect(input)
 }
 
 // input: stream, user, password, timeout, name
-async function webrtc_send_connect(input)
+async function webrtc_send_connect(input, callback)
 {
     var { stream, user, password, timeout, name } = input;
 
@@ -339,32 +352,32 @@ async function webrtc_send_connect(input)
     });
 
     pc.addEventListener('track', event => {
-        console.log("track", event);
+        if (callback) callback('peer', { type: 'track', kind: event.track.kind, streams: event.streams, track: event.track });
     });
     pc.addEventListener('icecandidate', (event) => {
-        console.log("icecandidate", event);
+        if (callback) callback('peer', { type: 'icecandidate', candidate: event });
     });
     pc.addEventListener('connectionstatechange', (event) => {
-        console.log("connectionstatechange", event);
         if (event.target.connectionState === "disconnected" || event.target.connectionState === "failed" || event.target.connectionState === "closed") {
             stream.getTracks().forEach(track => track.stop());
             console.log("PeerConnection disconnected, MediaStream stopped.");
         }
+        if (callback) callback('peer', { type: 'connectionstatechange', connectionState: event.target.connectionState });
     });
     pc.addEventListener('negotiationneeded', (event) => {
-        console.log('negotiationneeded', event);
+        if (callback) callback('peer', { type: 'negotiationneeded' });
     });
     pc.addEventListener('icegatheringstatechange', (event) => {
-        console.log('icegatheringstatechange', event);
+        if (callback) callback('peer', { type: 'icegatheringstatechange', iceGatheringState: event.target.iceGatheringState });
     });
     pc.addEventListener('iceconnectionstatechange', (event) => {
-        console.log('iceconnectionstatechange', event);
+        if (callback) callback('peer', { type: 'iceconnectionstatechange', iceConnectionState: event.target.iceConnectionState });
     });
     pc.addEventListener('icecandidateerror', (event) => {
-        console.log('icecandidateerror', event);
+        if (callback) callback('peer', { type: 'icecandidateerror', errorCode: event.errorCode, errorText: event.errorText });
     });
     pc.addEventListener('signalingstatechange', (event) => {
-        console.log('signalingstatechange', event);
+        if (callback) callback('peer', { type: 'signalingstatechange', signalingState: event.target.signalingState });
     });
 
     stream.getTracks().forEach(track => pc.addTrack(track, stream));
@@ -378,7 +391,6 @@ async function webrtc_send_connect(input)
     await new Promise(resolve => {
         var timerid = setTimeout(resolve, timeout);
         pc.onicegatheringstatechange = (event) => {
-            console.log('onicegatheringstatechange', event);
             if (pc.iceGatheringState === "complete") {
                 clearTimeout(timerid);
                 resolve();
@@ -387,7 +399,7 @@ async function webrtc_send_connect(input)
     });
 
     var input = {
-        url: `${mediamtx_base_url}/${name}/whip`,
+        url: `${webrtc_base_url}/${name}/whip`,
         headers: {
             "Authorization": "Basic " + btoa(user + ":" + password)
         },
