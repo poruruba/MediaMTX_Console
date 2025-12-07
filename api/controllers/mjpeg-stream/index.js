@@ -94,10 +94,6 @@ exports.stream_handler = awslambda.streamifyResponse(async (event, responseStrea
         stream: responseStream,
         boundary: BOUNDARY
     });
-    if (stream_list[name].latestBuffer)
-        await putFrame(stream_list[name].latestBuffer, name);
-    else
-        await putFrame(waitingBuffer, name);
 
     responseStream.on('close', () => {
         console.log('Client disconnected.');
@@ -110,6 +106,11 @@ exports.stream_handler = awslambda.streamifyResponse(async (event, responseStrea
             console.log("destroyed");
         }
     });
+
+    if (stream_list[name].latestBuffer)
+        await putFrame(stream_list[name].latestBuffer, name);
+    else
+        await putFrame(waitingBuffer, name);
 
     //    responseStream.end();
 });
