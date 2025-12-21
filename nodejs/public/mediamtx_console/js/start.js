@@ -4,11 +4,11 @@
 //const remoteConsole = new RemoteConsole("http://[remote server]/logio-post");
 //window.datgui = new dat.GUI();
 
-const mediamtx_base_url = 'https://home.poruru.work:29997';
-//const mediamtx_base_url = 'http://qnap.myhome.or.jp:9997';
+const mediamtx_base_url = 'https://[QNAPサーバ]:29997';
+//const mediamtx_base_url = 'http://[QNAPサーバ]:9997';
 
-const webrtc_base_url = "https://home.poruru.work:28889";
-//const webrtc_base_url = "http://qnap.myhome.or.jp:8889";
+const webrtc_base_url = "https://[QNAPサーバ]:28889";
+//const webrtc_base_url = "http://[QNAPサーバ]:8889";
 
 const base_url = "";
 
