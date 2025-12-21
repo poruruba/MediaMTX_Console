@@ -47,15 +47,6 @@ async function putFrame(buffer, name) {
 
                 item.stream.write(buffer);
                 item.stream.write(`\r\n`);
-
-                // 2/2
-                item.stream.write(`--${item.boundary}\r\n`);
-                item.stream.write(`Content-Type: ${type.mime}\r\n`);
-                item.stream.write(`Content-Length: ${buffer.length}\r\n`);
-                item.stream.write(`\r\n`);
-
-                item.stream.write(buffer);
-                item.stream.write(`\r\n`);
             } catch (error) {
                 console.error(error);
             }
@@ -73,7 +64,7 @@ exports.stream_handler = awslambda.streamifyResponse(async (event, responseStrea
     responseStream = awslambda.HttpResponseStream.from(responseStream, {
         statusCode: 200,
         headers: {
-            "Content-Type": "multipart/x-mixed-replace; boundary=--" + BOUNDARY,
+            "Content-Type": "multipart/x-mixed-replace; boundary=" + BOUNDARY,
         }
     });
 
@@ -135,3 +126,4 @@ exports.udp_handler = async (event, context) => {
         putFrame(Buffer.from(value, 'base64'), name);
     } else if (done) {}
 };
+
