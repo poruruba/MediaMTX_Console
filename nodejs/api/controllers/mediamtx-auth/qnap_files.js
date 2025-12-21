@@ -1,7 +1,7 @@
 const fetch = require('node-fetch');
 const xml2js = require( "xml2js" );;
 
-const base_url = "http://qnap.myhome.or.jp:5000";
+const base_url = "http://[QNAPサーバ]:5000";
 
 /* encode function start */
 const ezEncodeChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
@@ -147,3 +147,4 @@ module.exports = {
   signin,
   get_list
 };
+
