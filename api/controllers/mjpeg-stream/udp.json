@@ -1,7 +1,0 @@
-[
-	{
-		"enable": true,
-		"port": 1234,
-		"handler": "udp_handler"
-	}
-]
