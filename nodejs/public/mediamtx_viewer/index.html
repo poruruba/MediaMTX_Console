@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src * data: gap: https://ssl.gstatic.com 'unsafe-eval' 'unsafe-inline'; style-src * 'unsafe-inline'; media-src * blob:; img-src * data: content: blob:;">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="msapplication-tap-highlight" content="no">
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width">
+
+  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  <script src="https://code.jquery.com/jquery-1.12.4.min.js" integrity="sha384-nvAa0+6Qg9clwYCGGPpDQLVpLNn0fRaROjHqs13t4Ggj3Ez50XnGQqc/r8MhnRDZ" crossorigin="anonymous"></script>
+  <!-- Latest compiled and minified CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu" crossorigin="anonymous">
+  <!-- Optional theme -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap-theme.min.css" integrity="sha384-6pzBo3FDv/PJ8r2KRkGHifhEocL+1X2rVCTTkUfGk7/0pbek5mMa1upzvWbrUbOZ" crossorigin="anonymous">
+  <!-- Latest compiled and minified JavaScript -->
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha384-aJ21OjlMXNL5UyIl/XNwTMqvzeRMZH2w8c5cRVpzpU8Y5bApTppSuUkhZXN0VxHd" crossorigin="anonymous"></script>
+
+  <link rel="stylesheet" href="css/start.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/spinkit/2.0.1/spinkit.min.css" />
+  <script src="js/methods_bootstrap.js"></script>
+  <script src="js/components_bootstrap.js"></script>
+  <script src="js/components_utils.js"></script>
+  <script src="js/vue_utils.js"></script>
+  <script src="js/gql_utils.js"></script>
+
+  <script src="js/remoteconsole.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vconsole/dist/vconsole.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.x/dist/vue.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vuex@3.x/dist/vuex.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vue-router@3.x/dist/vue-router.min.js"></script>
+
+  <script src="https://cdn.jsdelivr.net/npm/js-cookie@2/src/js.cookie.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.7/dat.gui.min.js"></script>
+
+  <script src="js/webrtc_utils.js"></script>
+
+  <title>MediaMTX Viewer</title>
+</head>
+<body>
+<!--
+    <div id="loader-background">
+      <div class="sk-plane sk-center"></div>
+    </div>
+-->
+    <div id="top" class="container">
+        <div class="jumbotron">
+          <button class="btn btn-default btn-sm pull-right" v-on:click="start_config">config</button>
+          <h3>MediaMTX Viewer</h3>
+        </div>
+
+        <div class="row" style="display: flex; flex-wrap: wrap;">
+          <div class="col-md-6" v-for="(item, index) in connect_list">
+            <div class="panel panel-default">
+              <div class="panel-heading">
+                <h3 class="panel-title form-inline">
+                  <button class="btn btn-default btn-xs pull-right" v-on:click="webrtc_stop(index)" v-bind:disabled="!item.peer">切断</button>
+                  <label>path</label> {{item.source}}</span>
+                </h3>
+              </div>
+              <div class="panel-body">
+                <div class="form-inline">
+                  <label>type</label> <select class="form-control" v-model="item.source" v-bind:disabled="item.peer">
+                    <option v-for="(item2, index2) in mediamtx_paths" v-bind:value="item2.name">{{item2.name}}</option>
+                  </select>
+                  <button type="button" class="btn btn-primary" v-on:click="webrtc_start(index, item.source)" v-bind:disabled="item.peer">接続</button>
+                </div>
+                <br>
+                <center><video class="img-responsive" v-bind:id="'remoteVideo_' + index" autoplay playsinline controls></video></center>
+              </div>
+            </div>
+          </div>
+        </div>
+        <button class="btn btn-primary" v-on:click="item_append">＋</button><br>
+        <br>
+
+
+        <button class="btn btn-default" v-on:click="do_update">更新</button><br>
+        <br>
+        <label>paths</label>
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th>name</th><th>bytesReceived</th><th>source</th><th>tracks</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="(item, index) in mediamtx_paths">
+              <td>{{item.name}}</td><td>{{item.bytesReceived}}</td><td>{{item.source}}</td><td>{{item.tracks}}</td>
+            </tr>
+          </tbody>
+        </table>
+        <br>
+
+
+        <div class="modal fade" id="dialog_config">
+          <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h4 class="modal-title">設定</h4>
+              </div>
+              <div class="modal-body">
+                <div class="form-inline">
+                  <label>user</label> <input type="text" class="form-control" v-model="params_config.user"><br>
+                  <label>password</label> <input type="text" class="form-control" v-model="params_config.password"><br>
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-primary" v-on:click="do_update_config">更新</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">キャンセル</button>
+              </div>
+            </div><!-- /.modal-content -->
+          </div><!-- /.modal-dialog -->
+        </div><!-- /.modal -->
+
+        <router-view></router-view>
+      
+        <!-- for progress-dialog -->
+        <progress-dialog v-bind:title="progress_title"></progress-dialog>
+    </div>
+
+    <script src="js/store.js"></script>
+    <script src="js/router.js"></script>
+    <script src="js/start.js"></script>
+</body>

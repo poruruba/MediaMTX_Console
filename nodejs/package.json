@@ -1,0 +1,42 @@
+{
+  "name": "amplify_template",
+  "version": "1.0.0",
+  "description": "https://qiita.com/poruruba/items/0030a40f148369c4130d<br> https://qiita.com/poruruba/items/92164ca0fe7057199adf<br> https://qiita.com/poruruba/items/aad6a181e8ef0d956e71<br>",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "swagger": "node scripts/generate_swagger.js",
+    "build": "node scripts/copyall.js",
+    "lambda_upload": "node scripts/lambda_upload.js",
+    "lambda_download": "node scripts/lambda_download.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cookie-parser": "^1.4.5",
+    "cors": "^2.8.5",
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1",
+    "express-session": "^1.17.1",
+    "express-ws": "^5.0.2",
+    "file-type": "^21.1.1",
+    "ip": "^2.0.1",
+    "jwt-decode": "^3.1.2",
+    "mime-types": "^3.0.2",
+    "morgan": "^1.10.0",
+    "multer": "^1.4.5-lts.2",
+    "node-cron": "^3.0.0",
+    "node-fetch": "^2.7.0",
+    "path": "^0.12.7",
+    "uuid": "^8.3.2",
+    "ws": "^8.16.0",
+    "xml2js": "^0.6.2",
+    "yaml": "^1.10.0"
+  },
+  "devDependencies": {
+    "archiver": "^5.3.1",
+    "fs-extra": "^10.0.0"
+  },
+  "type": "commonjs"
+}
