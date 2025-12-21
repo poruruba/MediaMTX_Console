@@ -1,0 +1,9 @@
+paths:
+  /mcp-test:
+    post:
+      responses:
+        200:
+          description: Success
+          schema:
+            type: object
+

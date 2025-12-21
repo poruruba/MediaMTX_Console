@@ -1,0 +1,9 @@
+paths:
+  /test-express:
+    post:
+      x-functype: express
+      responses:
+        200:
+          description: Success
+          schema:
+            type: object

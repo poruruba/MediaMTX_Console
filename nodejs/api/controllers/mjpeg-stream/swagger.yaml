@@ -1,0 +1,20 @@
+paths:
+  /mjpeg-get:
+    get:
+      x-functype: stream
+      x-handler: stream_handler
+      responses:
+        200:
+          description: Success
+          schema:
+            type: object
+
+  /mjpeg-upload:
+    put:
+      consumes: 
+        - application/octet-stream
+      responses:
+        200:
+          description: Success
+          schema:
+            type: object
