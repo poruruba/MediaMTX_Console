@@ -15,8 +15,8 @@ const MEDIAMTX_USER_PASSWORD = process.env.MEDIAMTX_USER_PASSWORD;
 const QNAP_USER = process.env.QNAP_USER;
 const QNAP_PASSWORD = process.env.QNAP_PASSWORD;
 
-const base_url = 'https://[別のサーバ]:29997';
-//const base_url = 'http://[別のサーバ]:9997';
+const base_url = 'https://[QNAPサーバ:29997';
+//const base_url = 'http://[QNAPサーバ]:9997';
 const qnap_media_dir = "/Container/mediamtx/media";
 const mediamtx_media_dir = "/media";
 
