@@ -6,8 +6,8 @@
 
 const base_url = '';
 
-const webrtc_base_url = "https://home.poruru.work:28889";
-//const webrtc_base_url = "http://qnap.myhome.or.jp:8889";
+const webrtc_base_url = "https://[QNAPサーバ]:28889";
+//const webrtc_base_url = "http://[QNAPサーバ]:8889";
 
 var g_file;
 
