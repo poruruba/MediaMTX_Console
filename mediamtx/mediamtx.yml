@@ -221,7 +221,8 @@ pprofTrustedProxies: []
 # Enable downloading recordings from the playback server.
 playback: yes
 # Address of the playback server listener.
-playbackAddress: :9996
+#playbackAddress: :9996
+playbackAddress: [QNAPサーバ]:9996
 # Enable TLS/HTTPS on the playback server.
 playbackEncryption: no
 # Path to the server key. This is needed only when encryption is yes.
@@ -546,8 +547,8 @@ pathDefaults:
   rtspRangeType:
   # Available values:
   # * clock: UTC ISO 8601 combined date and time string, e.g. 20230812T120000Z
-  # * npt: duration such as "300ms", "1.5m" or "2h45m", valid time units are "ns", "us" (or "?s"), "ms", "s", "m", "h"
-  # * smpte: duration such as "300ms", "1.5m" or "2h45m", valid time units are "ns", "us" (or "?s"), "ms", "s", "m", "h"
+  # * npt: duration such as "300ms", "1.5m" or "2h45m", valid time units are "ns", "us" (or "μs"), "ms", "s", "m", "h"
+  # * smpte: duration such as "300ms", "1.5m" or "2h45m", valid time units are "ns", "us" (or "μs"), "ms", "s", "m", "h"
   rtspRangeStart:
 
   ###############################################
@@ -780,6 +781,11 @@ paths:
       -c:v libx264 -preset veryfast -tune zerolatency -g 1
       -pix_fmt yuv420p -profile:v baseline -color_range pc -an -err_detect ignore_err 
       -f rtsp -rtsp_transport tcp rtsp://user:[Userのパスワード]@127.0.0.1:$RTSP_PORT/$MTX_PATH
+
+  recording:
+    record: yes
+    recordPath: /recordings/%path/%Y%m%d%H%M%S_%f
+    recordFormat: fmp4
 
   # Settings under path "all_others" are applied to all paths that
   # do not match another entry.
