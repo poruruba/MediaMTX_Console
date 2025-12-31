@@ -4,6 +4,7 @@ const HELPER_BASE = process.env.HELPER_BASE || "/opt/";
 const Response = require(HELPER_BASE + 'response');
 const Redirect = require(HELPER_BASE + 'redirect');
 
+const HttpUtils = require(HELPER_BASE + 'http-utils');
 const MediaMtxUtls = require('./mediamtx_utils');
 const qnapfiles = require('./qnap_files');
 const mimetypes = require('mime-types');
@@ -15,10 +16,12 @@ const MEDIAMTX_USER_PASSWORD = process.env.MEDIAMTX_USER_PASSWORD;
 const QNAP_USER = process.env.QNAP_USER;
 const QNAP_PASSWORD = process.env.QNAP_PASSWORD;
 
-const base_url = 'https://[QNAPサーバ:29997';
+const base_url = 'https://[QNAPサーバ]:29997';
 //const base_url = 'http://[QNAPサーバ]:9997';
-const qnap_media_dir = "/Container/mediamtx/media";
+const qnap_media_dir = "/Documents/mediamtx/media";
 const mediamtx_media_dir = "/media";
+const recording_base_url = 'https://[QNAPサーバ]:29996';
+const recording_base_url_old = 'http://[QNAPサーバ]:9996';
 
 var mediamtx = new MediaMtxUtls(base_url, MEDIAMTX_ADMIN_USER, MEDIAMTX_ADMIN_PASSWORD);
 
@@ -54,6 +57,27 @@ exports.handler = async (event, context, callback) => {
 			console.log("auth failed");
 			return new Response({}, 401 );
 		}
+	}else
+
+	if( event.path == '/mediamtx-get-recording'){
+		var user = event.requestContext.basicAuth.basic[0];
+		var password = event.requestContext.basicAuth.basic[1];
+
+		var input = {
+			url: recording_base_url_old + "/list?path=recording",
+			method: "GET",
+			headers: {
+					Authorization: "Basic " + btoa(user + ":" + password)
+			}
+		};
+		var result = await HttpUtils.do_http(input);
+		console.log(result);
+
+		result = result.map(item => {
+			item.url_view = item.url.replace(recording_base_url_old, recording_base_url);
+			return item;
+		});
+		return new Response({ list: result });
 	}else
 
 	if( event.path == '/mediamtx-get-path'){

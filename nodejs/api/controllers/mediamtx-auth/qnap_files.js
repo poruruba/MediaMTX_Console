@@ -131,7 +131,7 @@ async function signin(user, password){
 }
 
 async function get_list(sid, path){
-  var url = `${base_url}/cgi-bin/filemanager/utilRequest.cgi?func=get_list&sid=${sid}&path=${encodeURIComponent(path)}&start=0&limit=100`;
+  var url = `${base_url}/cgi-bin/filemanager/utilRequest.cgi?func=get_list&sid=${sid}&path=${encodeURIComponent(path)}&start=0&limit=1000`;
   var result = await fetch(url, {
     method: "GET",
     cache: "no-store"
@@ -147,4 +147,3 @@ module.exports = {
   signin,
   get_list
 };
-

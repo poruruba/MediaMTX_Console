@@ -14,6 +14,21 @@ paths:
           schema:
             type: object
 
+  /mediamtx-get-recording:
+    post:
+      security:
+        - basicAuth: []
+      parameters:
+        - in: body
+          name: body
+          schema:
+            type: object
+      responses:
+        200:
+          description: Success
+          schema:
+            type: object
+
   /mediamtx-get-path:
     post:
       security:
