@@ -6,9 +6,6 @@
 
 const base_url = '';
 
-const webrtc_base_url = "https://[QNAPサーバ]:28889";
-//const webrtc_base_url = "http://[QNAPサーバ]:8889";
-
 var g_file;
 
 var vue_options = {
