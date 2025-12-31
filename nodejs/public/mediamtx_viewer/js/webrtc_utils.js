@@ -1,5 +1,18 @@
 
-function webrtc_disconnect(pc){
+async function webrtc_disconnect(pc){
+    if( pc.sessionUrl ){
+        try{
+            var input = {
+                url: pc.sessionUrl,
+                method: "DELETE",
+                response_type: "text"
+            };
+            var result = await do_http(input);
+            console.log(result);
+        }catch(error){
+            console.error(error);
+        }
+    }
     const senders = pc.getSenders();
     senders.forEach(sender => {
         const track = sender.track;
@@ -70,15 +83,19 @@ async function webrtc_receive_connect(input, callback)
         },
         content_type: "application/sdp",
         body: pc.localDescription.sdp,
-        response_type: "text"
+        response_type: "raw"
     };
-    const answerSDP = await do_http(input);
+    var response = await do_http(input);
+    const location = response.headers.get("location");
+    pc.sessionUrl = location.startsWith("http") ? location : webrtc_base_url + location;
+
+    const answerSDP = await response.text();
     await pc.setRemoteDescription({ type: "answer", sdp: answerSDP });
 
     return pc;
 }
 
-// input: stream, user, password, timeout, name
+// input: stream, user, password, timeout, nameforce_h264
 async function webrtc_send_connect(input, callback)
 {
     var { stream, user, password, timeout, name } = input;
@@ -123,6 +140,8 @@ async function webrtc_send_connect(input, callback)
     // pc.addTransceiver("audio", { direction: "sendonly" });
 
     var offer = await pc.createOffer();
+    if( input.force_h264 )
+        offer.sdp = prioritizeH264(offer.sdp);
     await pc.setLocalDescription(offer);
 
     await new Promise(resolve => {
@@ -142,10 +161,31 @@ async function webrtc_send_connect(input, callback)
         },
         content_type: "application/sdp",
         body: pc.localDescription.sdp,
-        response_type: "text"
+        response_type: "raw"
     };
-    const answerSDP = await do_http(input);
+    var response = await do_http(input);
+    const location = response.headers.get("location");
+    pc.sessionUrl = location.startsWith("http") ? location : webrtc_base_url + location;
+
+    const answerSDP = await response.text();
     await pc.setRemoteDescription({ type: "answer", sdp: answerSDP });
 
     return pc;
 }
+
+function prioritizeH264(sdp) {
+  const h264pts = [...sdp.matchAll(/a=rtpmap:(\d+) H264\/90000/g)].map(m => m[1]);
+  if (h264pts.length === 0)
+    return sdp;
+
+  const firstH264 = h264pts[0];
+  return sdp.replace(/m=video .*\r\n/, (line) => {
+    const parts = line.trim().split(" ");
+    const header = parts.slice(0, 3).join(" "); // m=video 9 UDP/TLS/RTP/SAVPF
+    const pts = parts.slice(3);
+
+    const reordered = [firstH264, ...pts.filter(pt => pt !== firstH264)];
+    return `${header} ${reordered.join(" ")}\r\n`;
+  });
+}
+

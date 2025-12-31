@@ -78,7 +78,7 @@ async function webrtc_receive_connect(input, callback)
     return pc;
 }
 
-// input: stream, user, password, timeout, name
+// input: stream, user, password, timeout, name, force_h264
 async function webrtc_send_connect(input, callback)
 {
     var { stream, user, password, timeout, name } = input;
@@ -123,6 +123,8 @@ async function webrtc_send_connect(input, callback)
     // pc.addTransceiver("audio", { direction: "sendonly" });
 
     var offer = await pc.createOffer();
+    if( input.force_h264 )
+        offer.sdp = prioritizeH264(offer.sdp);
     await pc.setLocalDescription(offer);
 
     await new Promise(resolve => {
@@ -149,3 +151,20 @@ async function webrtc_send_connect(input, callback)
 
     return pc;
 }
+
+function prioritizeH264(sdp) {
+  const h264pts = [...sdp.matchAll(/a=rtpmap:(\d+) H264\/90000/g)].map(m => m[1]);
+  if (h264pts.length === 0)
+    return sdp;
+
+  const firstH264 = h264pts[0];
+  return sdp.replace(/m=video .*\r\n/, (line) => {
+    const parts = line.trim().split(" ");
+    const header = parts.slice(0, 3).join(" "); // m=video 9 UDP/TLS/RTP/SAVPF
+    const pts = parts.slice(3);
+
+    const reordered = [firstH264, ...pts.filter(pt => pt !== firstH264)];
+    return `${header} ${reordered.join(" ")}\r\n`;
+  });
+}
+

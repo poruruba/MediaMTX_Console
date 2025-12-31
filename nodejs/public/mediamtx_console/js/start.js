@@ -135,7 +135,8 @@ var vue_options = {
                         user: this.config.user,
                         password: this.config.password,
                         name: source.path,
-                        timeout: 5000
+                        timeout: 5000,
+                        force_h264: true,
                     };
                     var peer = await webrtc_send_connect(input, (module, event) =>{
                         console.log(module, event);
@@ -171,7 +172,8 @@ var vue_options = {
                         user: this.config.user,
                         password: this.config.password,
                         name: source.path,
-                        timeout: 5000
+                        timeout: 5000,
+                        force_h264: true,
                     };
                     var peer = await webrtc_send_connect(input, this.default_callback);
                     this.$set(this.source_list[index], "peer", peer);
@@ -198,7 +200,8 @@ var vue_options = {
                         user: this.config.user,
                         password: this.config.password,
                         name: source.path,
-                        timeout: 5000
+                        timeout: 5000,
+                        force_h264: true,
                     };
                     var peer = await webrtc_send_connect(input, this.default_callback);
                     this.$set(this.source_list[index], "peer", peer);
@@ -208,7 +211,8 @@ var vue_options = {
                         user: this.config.user,
                         password: this.config.password,
                         name: source.path,
-                        timeout: 5000
+                        timeout: 5000,
+                        force_h264: true,
                     };
                     var peer = await webrtc_send_connect(input, this.default_callback);
                     this.$set(this.source_list[index], "peer", peer);
@@ -218,7 +222,8 @@ var vue_options = {
                         user: this.config.user,
                         password: this.config.password,
                         name: source.path,
-                        timeout: 5000
+                        timeout: 5000,
+                        force_h264: true,
                     };
                     var peer = await webrtc_send_connect(input, this.default_callback);
                     this.$set(this.source_list[index], "peer", peer);

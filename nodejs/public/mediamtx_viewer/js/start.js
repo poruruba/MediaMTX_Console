@@ -85,7 +85,7 @@ var vue_options = {
         },
 
         webrtc_stop: async function(index){
-            webrtc_disconnect(this.connect_list[index].peer );
+            await webrtc_disconnect(this.connect_list[index].peer );
             this.$set(this.connect_list[index], "peer", null ); 
         },
 
@@ -100,7 +100,24 @@ var vue_options = {
             var result = await do_http(input);
             console.log(result);
             this.mediamtx_paths = result.list;
+        },
+        do_recordings_update: async function(){
+            var input = {
+                url: base_url + '/mediamtx-get-recording',
+                method: "POST",
+                headers: {
+                    Authorization: "Basic " + btoa(this.config.user + ":" + this.config.password)
         }
+            };
+            var result = await do_http(input);
+            console.log(result);
+            result.list = result.list.map(item =>{
+                item.start_view = new Date(item.start).getTime();
+                return item;
+            })
+            .sort((a, b) => b.start_view - a.start_view);
+            this.mediamtx_recordings = result.list;
+        },
     },
     created: function(){
     },
@@ -115,6 +132,7 @@ var vue_options = {
         }
 
         this.do_update();
+        this.do_recordings_update();
     }
 };
 vue_add_data(vue_options, { progress_title: '' }); // for progress-dialog

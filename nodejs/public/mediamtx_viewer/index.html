@@ -95,6 +95,22 @@
         </table>
         <br>
 
+        <button class="btn btn-default" v-on:click="do_recordings_update">更新</button><br>
+        <br>
+        <label>recording</label>
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th>start</th><th>duration</th><th>action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="(item, index) in mediamtx_recordings">
+              <td>{{toLocaleString(item.start_view)}}</td><td>{{item.duration}}</td><td><a v-bind:href="item.url_view" target="_blank" rel="noopener noreferrer">View</a></td>
+            </tr>
+          </tbody>
+        </table>
+        <br>
 
         <div class="modal fade" id="dialog_config">
           <div class="modal-dialog modal-lg">
