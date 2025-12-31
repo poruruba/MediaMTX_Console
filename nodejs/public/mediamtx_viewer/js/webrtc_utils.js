@@ -1,3 +1,5 @@
+const webrtc_base_url = "https://[QNAPサーバ]:28889";
+//const webrtc_base_url = "http://[QNAPサーバ]:8889";
 
 async function webrtc_disconnect(pc){
     if( pc.sessionUrl ){
@@ -188,4 +190,5 @@ function prioritizeH264(sdp) {
     return `${header} ${reordered.join(" ")}\r\n`;
   });
 }
+
 
