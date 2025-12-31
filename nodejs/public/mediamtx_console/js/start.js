@@ -7,9 +7,6 @@
 const mediamtx_base_url = 'https://[QNAPサーバ]:29997';
 //const mediamtx_base_url = 'http://[QNAPサーバ]:9997';
 
-const webrtc_base_url = "https://[QNAPサーバ]:28889";
-//const webrtc_base_url = "http://[QNAPサーバ]:8889";
-
 const base_url = "";
 
 var vue_options = {
